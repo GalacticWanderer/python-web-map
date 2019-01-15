@@ -35,6 +35,12 @@ for lt, ln, nm, el in zip(lat, lon, name, elev):
     fg.add_child(folium.CircleMarker(location=[lt, ln],
                                      radius=6, popup="%s" % nm,
                                      fill_color=chooseColor(el), color="gray"))
+
+# added a new child to the feature group, it displays polygonal shapes based
+# on external input from world.json
+fg.add_child(folium.GeoJson(data=(open('world.json', 'r',
+                                       encoding='utf-8-sig').read())))
+
 #  adding fg to map and then saving map as html file
 map.add_child(fg)
 map.save("map1.html")
