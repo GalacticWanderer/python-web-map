@@ -26,21 +26,37 @@ def chooseColor(elev):
 # init a map variable with folium.Map and pass in loc, zoom and tile
 map = folium.Map(location=[38.58, -99.09], zoom_start=6, tiles="Mapbox Bright")
 
-# fg is feature group which is used to add elemsnts such as markers to the map
-fg = folium.FeatureGroup(name="My Map")
+# fgv is feature group which is used to add elemsnts such as markers to the map
+# in this instance fgv stands is specifically for Volcanoes
+fgv = folium.FeatureGroup(name="Volcanoes")
 
 # a loop to zip our lists of lat, lon, name and elevation and add to fg
 for lt, ln, nm, el in zip(lat, lon, name, elev):
-    # adding a circle marker on each loop to fg
-    fg.add_child(folium.CircleMarker(location=[lt, ln],
-                                     radius=6, popup="%s" % nm,
-                                     fill_color=chooseColor(el), color="gray"))
+    # adding a circle marker on each loop to fgv
+    fgv.add_child(folium.CircleMarker(location=[lt, ln],
+                                      radius=6, popup="%s" % nm,
+                                      fill_color=chooseColor(el), color="gray"))
 
+# fgp is a feature group specifically for population and polugonal colors
+fgp = folium.FeatureGroup(name="Population")
 # added a new child to the feature group, it displays polygonal shapes based
 # on external input from world.json
-fg.add_child(folium.GeoJson(data=(open('world.json', 'r',
-                                       encoding='utf-8-sig').read())))
+# using a lambda func and if/else statement, chnage the colors of polygons
+fgp.add_child(folium.GeoJson(data=open(
+    'world.json', 'r', encoding='utf-8-sig').read(),
+    style_function=lambda x: {'fillColor': 'green'
+                              # if less than 10 mil
+                              if x['properties']['POP2005'] < 10000000
+                              # if less than or equal to 10 mil and less than 20 mil
+                              else 'orange' if 10000000 <= x['properties']['POP2005'] < 20000000
+                              # otherwise just red
+                              else 'red'}))
+# the values POP2005 is stored on the world.json file as a child of 'properties'
+# hence x['properties']['POP2005']
 
-#  adding fg to map and then saving map as html file
-map.add_child(fg)
+#  adding fgv and fgp to map and then saving map as html file
+map.add_child(fgv)
+map.add_child(fgp)
+# using folium.LayerControl(), the user can toggle between different fgv and fgp
+map.add_child(folium.LayerControl())
 map.save("map1.html")
